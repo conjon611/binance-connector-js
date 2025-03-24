@@ -5,23 +5,69 @@
 [![Standard-Js](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-
 This is a lightweight library that works as a connector to [Binance public API](https://github.com/binance/binance-spot-api-docs). It’s designed to be simple, clean, and easy to use with minimal dependencies.
 
 - Supported APIs:
-    - `/api/*`
-    - `/sapi/*`
-    - Spot Websocket Market Stream
-    - Spot User Data Stream
-    - Spot Websocket API
+  - `/api/*`
+  - `/sapi/*`
+  - Spot Websocket Market Stream
+  - Spot User Data Stream
+  - Spot Websocket API
 - Inclusion of test cases and examples
 - Customizable base URL
 - Support request timeout and HTTP proxy (since v2)
 - Response metadata can be displayed
 - Customizable Logger
 
+## **Modularization Update**
 
-## Installation
+Binance has transitioned to a **modular connector structure**, where different API products are now available as separate packages. If you are using the **monolithic connector**, you are encouraged to migrate to the new modular connectors.
+
+### **Available Modular Connectors**
+
+| Product | Package |
+|---------|---------|
+| Algo Trading | `@binance/algo` |
+| Auto Invest | `@binance/auto-invest` |
+| C2C | `@binance/c2c` |
+| Convert | `@binance/convert` |
+| Copy Trading | `@binance/copy-trading` |
+| Crypto Loan | `@binance/crypto-loan` |
+| Derivatives Trading (COIN-M Futures) | `@binance/derivatives-trading-coin-futures` |
+| Derivatives Trading (Options) | `@binance/derivatives-trading-options` |
+| Derivatives Trading (Portfolio Margin) | `@binance/derivatives-trading-portfolio-margin` |
+| Derivatives Trading (Portfolio Margin Pro) | `@binance/derivatives-trading-portfolio-margin-pro` |
+| Derivatives Trading (USDS-M Futures) | `@binance/derivatives-trading-usds-futures` |
+| Dual Investment | `@binance/dual-investment` |
+| Fiat | `@binance/fiat` |
+| Gift Card | `@binance/gift-card` |
+| Margin Trading | `@binance/margin-trading` |
+| Mining | `@binance/mining` |
+| NFT | `@binance/nft` |
+| Pay | `@binance/pay` |
+| Rebate | `@binance/rebate` |
+| Simple Earn | `@binance/simple-earn` |
+| Spot Trading | `@binance/spot` |
+| Staking | `@binance/staking` |
+| Sub Account | `@binance/sub-account` |
+| VIP Loan | `@binance/vip-loan` |
+| Wallet | `@binance/wallet` |
+
+> **Note**: If a modular connector for your product is not available yet, you can continue using the monolithic connector.
+
+## **Migration Guide**
+
+If you are currently using the **monolithic connector**, refer to the [Migration Guide](./MIGRATION.md) for detailed steps on how to migrate.
+
+## **Installation**
+
+To use a modular connector, install the specific package:
+
+```bash
+npm install @binance/spot
+```
+
+For products without modular connectors yet, install the monolithic connector:
 
 ```bash
 npm install @binance/connector
@@ -194,6 +240,7 @@ client.time()
   .catch(error => client.logger.error(error))
 
 ```
+
 [This comment](https://github.com/axios/axios/issues/925#issuecomment-359982190) provides more details.
 
 ### Response Metadata
@@ -257,10 +304,10 @@ There are 2 types of error that may be returned from the API server and the user
 - `Server error`
   - This is thrown when server returns `5XX`, it's an issue from server side.
 
-
 ## Websocket
 
 ### Websocket Stream
+
 ```javascript
 const { WebsocketStream } = require('@binance/connector')
 const logger = new Console({ stdout: process.stdout, stderr: process.stderr })
@@ -315,7 +362,6 @@ setTimeout(() => websocketAPIClient.disconnect(), 20000)
 
 More websocket examples are available in the `examples` folder
 
-
 ### Auto Reconnect
 
 If there is a close event not initiated by the user, the reconnection mechanism will be triggered in 5 secs.
@@ -347,10 +393,11 @@ npm run test
 
 Futures and Vanilla Options APIs are not supported:
 
-  - `/fapi/*`
-  - `/dapi/*`
-  - `/vapi/*`
-  -  Associated Websocket Market and User Data Streams
+- `/fapi/*`
+- `/dapi/*`
+- `/vapi/*`
+- Associated Websocket Market and User Data Streams
 
 ## License
+
 MIT
