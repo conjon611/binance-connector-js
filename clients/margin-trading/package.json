@@ -48,7 +48,7 @@
         "typescript-eslint": "^8.24.0"
     },
     "dependencies": {
-        "@binance/common": "file:../../binance-common-1.0.0.tgz",
+        "@binance/common": "1.0.0",
         "axios": "^1.7.4"
     }
 }
