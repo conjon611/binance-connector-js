@@ -27,6 +27,6 @@
         "typescript": "^5.7.2"
     },
     "dependencies": {
-        "@binance/common": "file:../binance-common-1.0.0.tgz"
+        "@binance/common": "1.0.0"
     }
 }
