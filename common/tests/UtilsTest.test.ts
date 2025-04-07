@@ -396,14 +396,22 @@ describe('Utility Functions', () => {
             restConfiguration.retries = 3;
             restConfiguration.backoff = 100;
 
-            const mockError = {
-                response: {
-                    status: 500,
-                    data: JSON.stringify({}),
-                },
-            };
-
-            mockAxios.request.mockRejectedValue(mockError);
+            mockAxios.request
+                .mockRejectedValueOnce({
+                    response: {
+                        status: 500,
+                        data: JSON.stringify({}),
+                    },
+                })
+                .mockRejectedValueOnce({
+                    response: {
+                        status: 500,
+                        data: JSON.stringify({}),
+                    },
+                })
+                .mockRejectedValueOnce({
+                    response: {},
+                });
 
             const requestArgs = {
                 url: '/test',
@@ -411,7 +419,7 @@ describe('Utility Functions', () => {
             };
 
             await expect(httpRequestFunction(requestArgs, restConfiguration)).rejects.toThrowError(
-                'Server error: 500'
+                'Request failed after 3 retries'
             );
 
             expect(mockAxios.request).toHaveBeenCalledTimes(3);
@@ -499,6 +507,50 @@ describe('Utility Functions', () => {
             const requestArgs = { url: '/test', options: {} };
 
             await expect(httpRequestFunction(requestArgs)).rejects.toThrow('Server error: 503');
+        });
+
+        it('should throw ConnectorClientError for generic unknown errors', async () => {
+            const mockError = { response: { status: 600 } };
+            mockAxios.request.mockRejectedValue(mockError);
+
+            const requestArgs = { url: '/test', options: {} };
+
+            await expect(httpRequestFunction(requestArgs)).rejects.toThrow(
+                'An unexpected error occurred.'
+            );
+        });
+
+        it('should throw NetworkError for network errors', async () => {
+            const mockError = { response: {} };
+            mockAxios.request.mockRejectedValue(mockError);
+
+            const requestArgs = { url: '/test', options: {} };
+
+            await expect(httpRequestFunction(requestArgs)).rejects.toThrow(
+                'Network error or request timeout.'
+            );
+        });
+
+        it('should not attempt to parse error data if it is not a string (undefined)', async () => {
+            const mockError = { response: { status: 400, data: undefined } };
+            mockAxios.request.mockRejectedValue(mockError);
+
+            const requestArgs = { url: '/test', options: {} };
+
+            await expect(httpRequestFunction(requestArgs)).rejects.toThrow(
+                'The request was invalid or cannot be otherwise served.'
+            );
+        });
+
+        it('should not attempt to parse error data if it is not a string (object)', async () => {
+            const mockError = { response: { status: 400, data: { foo: 'bar' } } };
+            mockAxios.request.mockRejectedValue(mockError);
+
+            const requestArgs = { url: '/test', options: {} };
+
+            await expect(httpRequestFunction(requestArgs)).rejects.toThrow(
+                'The request was invalid or cannot be otherwise served.'
+            );
         });
     });
 
