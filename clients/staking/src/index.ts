@@ -3,7 +3,6 @@ export * as StakingRestAPI from './rest-api';
 
 export {
     STAKING_REST_API_PROD_URL,
-    STAKING_REST_API_TESTNET_URL,
     ConnectorClientError,
     RequiredError,
     UnauthorizedError,
