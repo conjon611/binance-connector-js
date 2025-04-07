@@ -1,7 +1,7 @@
 /**
- * Binance Public Simple Earn REST API
+ * Binance Simple Earn REST API
  *
- * OpenAPI Specification for the Binance Public Simple Earn REST API
+ * OpenAPI Specification for the Binance Simple Earn REST API
  *
  * The version of the OpenAPI document: 1.0.0
  *
