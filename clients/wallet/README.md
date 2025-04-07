@@ -147,21 +147,6 @@ The REST API provides detailed error types to help you handle issues effectively
 
 See the [Error Handling example](./docs/rest-api/error-handling.md) for detailed usage.
 
-#### Testnet
-
-For testing purposes, wallet endpoints can be used in the [Testnet](https://testnet.binance.vision/). Update the `basePath` in your configuration:
-
-```typescript
-import { Wallet, WalletRestAPI, WALLET_REST_API_TESTNET_URL } from '@binance/wallet';
-
-const configurationRestAPI = {
-    apiKey: 'your-api-key',
-    apiSecret: 'your-api-secret',
-    basePath: WALLET_REST_API_TESTNET_URL,
-};
-const client = new Wallet({ configurationRestAPI });
-```
-
 If `basePath` is not provided, it defaults to `https://api.binance.com`.
 
 ## Testing
