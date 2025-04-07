@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1 - 2025-04-07
+
+- Update `@binance/common` library to version `1.0.1`.
+- Remove unsupported Testnet URL.
+
 ## 2.0.0 - 2025-03-28
 
 ### Added
