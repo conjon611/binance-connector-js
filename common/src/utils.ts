@@ -310,6 +310,7 @@ export const httpRequestFunction = async function <T>(
     const retries = configuration?.retries ?? 0;
     const backoff = configuration?.backoff ?? 0;
     let attempt = 0;
+    let lastError;
 
     while (attempt <= retries) {
         try {
@@ -326,50 +327,62 @@ export const httpRequestFunction = async function <T>(
             };
         } catch (error) {
             attempt++;
+            const axiosError = error as AxiosError;
 
             if (
                 shouldRetryRequest(
-                    error as AxiosError,
+                    axiosError,
                     axiosRequestArgs?.method?.toUpperCase(),
                     retries - attempt
                 )
             ) {
                 await delay(backoff * attempt);
             } else {
-                if ((error as AxiosError).response) {
-                    const status = (error as AxiosError).response?.status as number;
-                    const data = JSON.parse(
-                        ((error as AxiosError).response?.data as string) ?? '{}'
-                    );
+                if (axiosError.response && axiosError.response.status) {
+                    const status = axiosError.response?.status;
+                    const responseData = axiosError.response.data;
+
+                    let data: Record<string, unknown> = {};
+                    if (responseData && responseData !== null) {
+                        if (typeof responseData === 'string' && responseData !== '')
+                            data = JSON.parse(responseData);
+                        else if (typeof responseData === 'object')
+                            data = responseData as Record<string, unknown>;
+                    }
+
+                    const errorMsg = (data as { msg?: string }).msg;
 
                     switch (status) {
                     case 400:
-                        throw new BadRequestError(data?.msg);
+                        throw new BadRequestError(errorMsg);
                     case 401:
-                        throw new UnauthorizedError(data?.msg);
+                        throw new UnauthorizedError(errorMsg);
                     case 403:
-                        throw new ForbiddenError(data?.msg);
+                        throw new ForbiddenError(errorMsg);
                     case 404:
-                        throw new NotFoundError(data?.msg);
+                        throw new NotFoundError(errorMsg);
                     case 418:
-                        throw new RateLimitBanError(data?.msg);
+                        throw new RateLimitBanError(errorMsg);
                     case 429:
-                        throw new TooManyRequestsError(data?.msg);
+                        throw new TooManyRequestsError(errorMsg);
                     default:
                         if (status >= 500 && status < 600)
                             throw new ServerError(`Server error: ${status}`, status);
-                        throw new ConnectorClientError(data?.msg);
+                        throw new ConnectorClientError(errorMsg);
                     }
                 } else {
-                    throw new NetworkError('Network error or request timeout.');
+                    if (retries > 0 && attempt >= retries)
+                        lastError = new Error(`Request failed after ${retries} retries`);
+                    else lastError = new NetworkError('Network error or request timeout.');
+
+                    break;
                 }
             }
         }
     }
 
-    throw new Error(`Request failed after ${retries} retries`);
+    throw lastError;
 };
-
 /**
  * Parses the rate limit headers from the Axios response headers and returns an array of `RestApiRateLimit` objects.
  *
