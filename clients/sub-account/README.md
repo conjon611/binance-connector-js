@@ -146,25 +146,6 @@ The REST API provides detailed error types to help you handle issues effectively
 
 See the [Error Handling example](./docs/rest-api/error-handling.md) for detailed usage.
 
-#### Testnet
-
-For testing purposes, `/sapi/v1/sub-account/*`, `/sapi/v2/sub-account/*`, `/sapi/v3/sub-account/*`, `/sapi/v4/sub-account/*`, `/sapi/v1/managed-subaccount/*` and `/sapi/v1/capital/*` endpoints can be used in the [Testnet](https://testnet.binance.vision/). Update the `basePath` in your configuration:
-
-```typescript
-import {
-    SubAccount,
-    SubAccountRestAPI,
-    SUB_ACCOUNT_REST_API_TESTNET_URL,
-} from '@binance/sub-account';
-
-const configurationRestAPI = {
-    apiKey: 'your-api-key',
-    apiSecret: 'your-api-secret',
-    basePath: SUB_ACCOUNT_REST_API_TESTNET_URL,
-};
-const client = new SubAccount({ configurationRestAPI });
-```
-
 If `basePath` is not provided, it defaults to `https://api.binance.com`.
 
 ## Testing
