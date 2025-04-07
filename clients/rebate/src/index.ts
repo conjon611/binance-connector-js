@@ -3,7 +3,6 @@ export * as RebateRestAPI from './rest-api';
 
 export {
     REBATE_REST_API_PROD_URL,
-    REBATE_REST_API_TESTNET_URL,
     ConnectorClientError,
     RequiredError,
     UnauthorizedError,

@@ -2,9 +2,9 @@
 /* eslint-disable */
 
 /**
- * Binance Public Rebate REST API
+ * Binance Rebate REST API
  *
- * OpenAPI Specification for the Binance Public Rebate REST API
+ * OpenAPI Specification for the Binance Rebate REST API
  *
  * The version of the OpenAPI document: 1.0.0
  *
