@@ -1,9 +1,9 @@
 /* tslint:disable */
 
 /**
- * Binance Public Spot REST API
+ * Binance Spot REST API
  *
- * OpenAPI Specifications for the Binance Public Spot REST API
+ * OpenAPI Specifications for the Binance Spot REST API
  *
  * API documents:
  * - [Github rest-api documentation file](https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md)
