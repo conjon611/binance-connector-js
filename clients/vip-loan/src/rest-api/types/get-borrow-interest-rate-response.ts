@@ -2,9 +2,9 @@
 /* eslint-disable */
 
 /**
- * Binance Public VIP Loan REST API
+ * Binance VIP Loan REST API
  *
- * OpenAPI Specification for the Binance Public VIP Loan REST API
+ * OpenAPI Specification for the Binance VIP Loan REST API
  *
  * The version of the OpenAPI document: 1.0.0
  *
