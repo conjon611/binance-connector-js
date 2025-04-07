@@ -1,9 +1,9 @@
 /* tslint:disable */
 
 /**
- * Binance Public Staking REST API
+ * Binance Staking REST API
  *
- * OpenAPI Specification for the Binance Public Staking REST API
+ * OpenAPI Specification for the Binance Staking REST API
  *
  * The version of the OpenAPI document: 1.0.0
  *
