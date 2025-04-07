@@ -64,6 +64,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.target == 'common' && 'common/package-lock.json' || format('clients/{0}/package-lock.json', matrix.target) }}
 
       - name: Check if this target was modified
         id: check-target
