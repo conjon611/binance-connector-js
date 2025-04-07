@@ -1,7 +1,7 @@
 /**
- * Binance Public Spot WebSocket Streams
+ * Binance Spot WebSocket Streams
  *
- * OpenAPI Specifications for the Binance Public Spot WebSocket Streams
+ * OpenAPI Specifications for the Binance Spot WebSocket Streams
  *
  * API documents:
  * - [Github web-socket-streams documentation file](https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md)

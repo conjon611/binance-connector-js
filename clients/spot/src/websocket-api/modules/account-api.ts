@@ -1,7 +1,7 @@
 /**
- * Binance Public Spot WebSocket API
+ * Binance Spot WebSocket API
  *
- * OpenAPI Specifications for the Binance Public Spot WebSocket API
+ * OpenAPI Specifications for the Binance Spot WebSocket API
  *
  * API documents:
  * - [Github web-socket-api documentation file](https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-api.md)
