@@ -11,26 +11,40 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  build-docs:
+  deploy-docs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install & Build Docs
-        run: |
-          npm ci
-          npm run docs:build
+      - name: Setup Node.js & Install
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
 
-      - name: Upload static site
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build docs
+        run: npm run docs:build
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs
 
-  deploy-docs:
-    needs: build-docs
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy to GitHub Pages
+        id: deploy
         uses: actions/deploy-pages@v1
+        
