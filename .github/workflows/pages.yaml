@@ -6,6 +6,11 @@ on:
       - master
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build-docs:
     runs-on: ubuntu-latest
@@ -18,7 +23,7 @@ jobs:
           npm ci
           npm run docs:build
 
-      - name: Upload built docs
+      - name: Upload static site
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs
