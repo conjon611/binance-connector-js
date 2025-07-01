@@ -29,9 +29,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.12.0'
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          for pkg in common clients/*; do
+            pushd $pkg
+            npm ci
+            popd
+          done
       
       - name: Build docs
         run: npm run docs:build
