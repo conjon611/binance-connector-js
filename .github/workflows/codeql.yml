@@ -41,12 +41,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        # Install dependencies for common module
+        # Install dependencies for common module to ensure CodeQL can analyze dependencies
         cd common && npm ci
-        
-        # Install dependencies for a few key client modules to ensure broader analysis
-        cd ../clients/spot && npm ci
-        cd ../nft && npm ci
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
