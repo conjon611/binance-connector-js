@@ -470,7 +470,11 @@ function validateURL(url: string, basePath?: string): boolean {
         
         return true;
     } catch (error) {
-        throw new Error(`Invalid URL: ${error}`);
+        // Use generic error message to avoid leaking URL details
+        if (error instanceof Error && error.message.startsWith('Invalid URL')) {
+            throw error;
+        }
+        throw new Error('Invalid or malformed URL provided');
     }
 }
 
@@ -819,11 +823,12 @@ export function buildUserAgent(packageName: string, packageVersion: string): str
  * @internal
  */
 function redactSensitiveData(obj: Record<string, unknown>): Record<string, unknown> {
-    const sensitiveKeys = ['apiKey', 'signature', 'apiSecret', 'password', 'privateKey', 'passphrase'];
+    const sensitiveKeys = ['apikey', 'signature', 'apisecret', 'password', 'privatekey', 'passphrase'];
     const redacted: Record<string, unknown> = {};
     
     for (const [key, value] of Object.entries(obj)) {
-        if (sensitiveKeys.some(sk => key.toLowerCase().includes(sk.toLowerCase()))) {
+        const lowerKey = key.toLowerCase();
+        if (sensitiveKeys.some(sk => lowerKey.includes(sk))) {
             redacted[key] = '***REDACTED***';
         } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
             redacted[key] = redactSensitiveData(value as Record<string, unknown>);
