@@ -297,9 +297,17 @@ export function setFlattenedQueryParams(
         return;
     }
 
-    // Object handling
+    // Object handling with prototype pollution protection
     if (typeof parameter === 'object') {
+        // Prevent prototype pollution by checking for dangerous keys
+        const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+        
         for (const subKey of Object.keys(parameter as Record<string, unknown>)) {
+            // Skip dangerous keys that could lead to prototype pollution
+            if (dangerousKeys.includes(subKey)) {
+                continue;
+            }
+            
             const subVal = (parameter as Record<string, unknown>)[subKey];
             const newKey = key ? `${key}.${subKey}` : subKey;
             setFlattenedQueryParams(urlSearchParams, subVal, newKey);
@@ -367,7 +375,13 @@ export function normalizeScientificNumbers<T>(obj: T): ScientificToString<T> {
         return obj.map((item) => normalizeScientificNumbers(item)) as ScientificToString<T>;
     } else if (typeof obj === 'object' && obj !== null) {
         const result = {} as Record<string, unknown>;
+        const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+        
         for (const key of Object.keys(obj)) {
+            // Skip dangerous keys to prevent prototype pollution
+            if (dangerousKeys.includes(key)) {
+                continue;
+            }
             result[key] = normalizeScientificNumbers((obj as Record<string, unknown>)[key]);
         }
         return result as ScientificToString<T>;
@@ -432,6 +446,35 @@ export const shouldRetryRequest = function (
 };
 
 /**
+ * Validates a URL to ensure it's safe and well-formed.
+ * 
+ * @param {string} url - The URL to validate.
+ * @param {string} [basePath] - Optional base path for validation.
+ * @returns {boolean} True if URL is valid and safe.
+ * @throws {Error} If URL is invalid or potentially malicious.
+ * @internal
+ */
+function validateURL(url: string, basePath?: string): boolean {
+    try {
+        const urlObj = new URL(url, basePath);
+        
+        // Only allow http and https protocols
+        if (!['http:', 'https:'].includes(urlObj.protocol)) {
+            throw new Error(`Invalid URL protocol: ${urlObj.protocol}`);
+        }
+        
+        // Prevent URL with embedded credentials
+        if (urlObj.username || urlObj.password) {
+            throw new Error('URLs with embedded credentials are not allowed');
+        }
+        
+        return true;
+    } catch (error) {
+        throw new Error(`Invalid URL: ${error}`);
+    }
+}
+
+/**
  * Performs an HTTP request using the provided Axios instance and configuration.
  *
  * This function handles retries, rate limit handling, and error handling for the HTTP request.
@@ -444,9 +487,17 @@ export const httpRequestFunction = async function <T>(
     axiosArgs: AxiosRequestArgs,
     configuration?: ConfigurationRestAPI
 ): Promise<RestApiResponse<T>> {
+    const basePath = configuration?.basePath ?? '';
+    const fullURL = (globalAxios.defaults?.baseURL ? '' : basePath) + axiosArgs.url;
+    
+    // Validate URL before making request
+    if (basePath) {
+        validateURL(fullURL, basePath);
+    }
+    
     const axiosRequestArgs = {
         ...axiosArgs.options,
-        url: (globalAxios.defaults?.baseURL ? '' : (configuration?.basePath ?? '')) + axiosArgs.url,
+        url: fullURL,
     };
 
     if (configuration?.keepAlive && !configuration?.baseOptions?.httpsAgent)
@@ -761,6 +812,30 @@ export function buildUserAgent(packageName: string, packageVersion: string): str
 }
 
 /**
+ * Redacts sensitive data from an object for safe logging.
+ *
+ * @param {Record<string, unknown>} obj - The object to redact.
+ * @returns {Record<string, unknown>} A copy of the object with sensitive fields redacted.
+ * @internal
+ */
+function redactSensitiveData(obj: Record<string, unknown>): Record<string, unknown> {
+    const sensitiveKeys = ['apiKey', 'signature', 'apiSecret', 'password', 'privateKey', 'passphrase'];
+    const redacted: Record<string, unknown> = {};
+    
+    for (const [key, value] of Object.entries(obj)) {
+        if (sensitiveKeys.some(sk => key.toLowerCase().includes(sk.toLowerCase()))) {
+            redacted[key] = '***REDACTED***';
+        } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            redacted[key] = redactSensitiveData(value as Record<string, unknown>);
+        } else {
+            redacted[key] = value;
+        }
+    }
+    
+    return redacted;
+}
+
+/**
  * Builds a WebSocket API message with optional authentication and signature.
  *
  * @param {ConfigurationWebsocketAPI} configuration - The WebSocket API configuration.
@@ -793,16 +868,36 @@ export function buildWebsocketAPIMessage(
 }
 
 /**
+ * Exports the redaction function for use in other modules.
+ * This allows logging systems to redact sensitive information.
+ *
+ * @param {Record<string, unknown>} obj - The object to redact.
+ * @returns {Record<string, unknown>} A copy of the object with sensitive fields redacted.
+ */
+export { redactSensitiveData };
+
+/**
  * Sanitizes a header value by checking for and preventing carriage return and line feed characters.
  *
  * @param {string | string[]} value - The header value or array of header values to sanitize.
  * @returns {string | string[]} The sanitized header value(s).
- * @throws {Error} If the header value contains CR/LF characters.
+ * @throws {Error} If the header value contains CR/LF characters or other unsafe characters.
  */
 export function sanitizeHeaderValue(value: string | string[]): string | string[] {
     const sanitizeOne = (v: string) => {
+        // Check for CR/LF which can be used for header injection
         if (/\r|\n/.test(v)) throw new Error(`Invalid header value (contains CR/LF): "${v}"`);
-        return v;
+        
+        // Check for null bytes which can cause security issues
+        if (v.includes('\0')) throw new Error(`Invalid header value (contains null byte): "${v}"`);
+        
+        // Check for common header injection patterns
+        if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(v)) {
+            throw new Error(`Invalid header value (contains control characters): "${v}"`);
+        }
+        
+        // Trim to prevent leading/trailing whitespace issues
+        return v.trim();
     };
 
     return Array.isArray(value) ? value.map(sanitizeOne) : sanitizeOne(value);

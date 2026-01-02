@@ -10,6 +10,7 @@ import {
     randomString,
     validateTimeUnit,
     buildWebsocketAPIMessage,
+    redactSensitiveData,
 } from '.';
 
 export class WebsocketEventEmitter {
@@ -326,7 +327,9 @@ export class WebsocketCommon extends WebsocketEventEmitter {
                 req.options
             );
 
-            this.logger.debug(`Session re-logon on connection ${connection.id}`, data);
+            // Redact sensitive data before logging
+            const safeData = redactSensitiveData(data as Record<string, unknown>);
+            this.logger.debug(`Session re-logon on connection ${connection.id}`, safeData);
 
             try {
                 await this.send(
@@ -839,7 +842,9 @@ export class WebsocketAPIBase extends WebsocketCommon {
             skipAuth
         );
 
-        this.logger.debug('Send message to Binance WebSocket API Server:', data);
+        // Redact sensitive data before logging
+        const safeData = redactSensitiveData(data as Record<string, unknown>);
+        this.logger.debug('Send message to Binance WebSocket API Server:', safeData);
 
         const responses = await Promise.all(
             connections.map(
