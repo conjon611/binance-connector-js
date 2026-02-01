@@ -1104,6 +1104,10 @@ describe('Utility Functions', () => {
             expect(utils.sanitizeHeaderValue('foo-bar')).toBe('foo-bar');
         });
 
+        it('allows TAB character (\\x09) which is valid per RFC 7230', () => {
+            expect(utils.sanitizeHeaderValue('value\twith\ttab')).toBe('value\twith\ttab');
+        });
+
         it('throws on a string containing CR', () => {
             expect(() => utils.sanitizeHeaderValue('bad\rvalue')).toThrowError(
                 /Invalid header value \(contains control characters\): "bad\rvalue"/

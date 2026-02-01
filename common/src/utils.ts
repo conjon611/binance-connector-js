@@ -792,6 +792,22 @@ export function buildWebsocketAPIMessage(
     return { id, method, params };
 }
 
+// Pattern to match invalid control characters in HTTP header values.
+// Uses RegExp constructor with String.fromCharCode to avoid ESLint no-control-regex rule violation.
+// Excludes TAB (0x09) which is valid per RFC 7230, but includes:
+// - 0x00-0x08: NULL through BACKSPACE
+// - 0x0A-0x1F: LINE FEED through UNIT SEPARATOR (includes CR at 0x0D)
+const INVALID_HEADER_CONTROL_CHARS = new RegExp(
+    '[' +
+        String.fromCharCode(0x00) +
+        '-' +
+        String.fromCharCode(0x08) +
+        String.fromCharCode(0x0a) +
+        '-' +
+        String.fromCharCode(0x1f) +
+        ']'
+);
+
 /**
  * Sanitizes a header value by checking for and preventing control characters.
  *
@@ -800,15 +816,8 @@ export function buildWebsocketAPIMessage(
  * @throws {Error} If the header value contains invalid control characters.
  */
 export function sanitizeHeaderValue(value: string | string[]): string | string[] {
-    // Use RegExp constructor with character range to avoid ESLint no-control-regex rule violation
-    // This pattern matches control characters in the range 0x00-0x1f (including CR, LF, TAB, etc.)
-    // We build the range using String.fromCharCode to avoid literal control characters
-    const controlCharsPattern = new RegExp(
-        '[' + String.fromCharCode(0x00) + '-' + String.fromCharCode(0x1f) + ']'
-    );
-    
     const sanitizeOne = (v: string) => {
-        if (controlCharsPattern.test(v)) {
+        if (INVALID_HEADER_CONTROL_CHARS.test(v)) {
             throw new Error(`Invalid header value (contains control characters): "${v}"`);
         }
         return v;
