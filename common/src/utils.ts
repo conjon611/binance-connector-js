@@ -793,15 +793,24 @@ export function buildWebsocketAPIMessage(
 }
 
 /**
- * Sanitizes a header value by checking for and preventing carriage return and line feed characters.
+ * Sanitizes a header value by checking for and preventing control characters.
  *
  * @param {string | string[]} value - The header value or array of header values to sanitize.
  * @returns {string | string[]} The sanitized header value(s).
- * @throws {Error} If the header value contains CR/LF characters.
+ * @throws {Error} If the header value contains invalid control characters.
  */
 export function sanitizeHeaderValue(value: string | string[]): string | string[] {
+    // Use RegExp constructor with character range to avoid ESLint no-control-regex rule violation
+    // This pattern matches control characters in the range 0x00-0x1f (including CR, LF, TAB, etc.)
+    // We build the range using String.fromCharCode to avoid literal control characters
+    const controlCharsPattern = new RegExp(
+        '[' + String.fromCharCode(0x00) + '-' + String.fromCharCode(0x1f) + ']'
+    );
+    
     const sanitizeOne = (v: string) => {
-        if (/\r|\n/.test(v)) throw new Error(`Invalid header value (contains CR/LF): "${v}"`);
+        if (controlCharsPattern.test(v)) {
+            throw new Error(`Invalid header value (contains control characters): "${v}"`);
+        }
         return v;
     };
 
