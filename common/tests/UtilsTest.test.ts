@@ -1104,15 +1104,55 @@ describe('Utility Functions', () => {
             expect(utils.sanitizeHeaderValue('foo-bar')).toBe('foo-bar');
         });
 
+        it('allows TAB character (\\x09) which is valid per RFC 7230', () => {
+            expect(utils.sanitizeHeaderValue('value\twith\ttab')).toBe('value\twith\ttab');
+        });
+
         it('throws on a string containing CR', () => {
             expect(() => utils.sanitizeHeaderValue('bad\rvalue')).toThrowError(
-                /Invalid header value \(contains CR\/LF\): "bad\rvalue"/
+                /Invalid header value \(contains control characters\): "bad\rvalue"/
             );
         });
 
         it('throws on a string containing LF', () => {
             expect(() => utils.sanitizeHeaderValue('bad\nvalue')).toThrowError(
-                /Invalid header value \(contains CR\/LF\): "bad\nvalue"/
+                /Invalid header value \(contains control characters\): "bad\nvalue"/
+            );
+        });
+
+        it('throws on a string containing null character (\\x00)', () => {
+            expect(() => utils.sanitizeHeaderValue('bad\x00value')).toThrowError(
+                /Invalid header value \(contains control characters\):/
+            );
+        });
+
+        it('throws on a string containing backspace (\\x08)', () => {
+            expect(() => utils.sanitizeHeaderValue('bad\x08value')).toThrowError(
+                /Invalid header value \(contains control characters\):/
+            );
+        });
+
+        it('throws on a string containing vertical tab (\\x0b)', () => {
+            expect(() => utils.sanitizeHeaderValue('bad\x0bvalue')).toThrowError(
+                /Invalid header value \(contains control characters\):/
+            );
+        });
+
+        it('throws on a string containing form feed (\\x0c)', () => {
+            expect(() => utils.sanitizeHeaderValue('bad\x0cvalue')).toThrowError(
+                /Invalid header value \(contains control characters\):/
+            );
+        });
+
+        it('throws on a string containing shift out (\\x0e)', () => {
+            expect(() => utils.sanitizeHeaderValue('bad\x0evalue')).toThrowError(
+                /Invalid header value \(contains control characters\):/
+            );
+        });
+
+        it('throws on a string containing unit separator (\\x1f)', () => {
+            expect(() => utils.sanitizeHeaderValue('bad\x1fvalue')).toThrowError(
+                /Invalid header value \(contains control characters\):/
             );
         });
 
@@ -1121,10 +1161,10 @@ describe('Utility Functions', () => {
             expect(utils.sanitizeHeaderValue(arr)).toEqual(arr);
         });
 
-        it('throws if any element in the array contains CRLF', () => {
+        it('throws if any element in the array contains control characters', () => {
             expect(() =>
                 utils.sanitizeHeaderValue(['good', 'bad\nvalue', 'also-good'])
-            ).toThrowError(/Invalid header value \(contains CR\/LF\): "bad\nvalue"/);
+            ).toThrowError(/Invalid header value \(contains control characters\): "bad\nvalue"/);
         });
     });
 
