@@ -56,6 +56,6 @@
     },
     "dependencies": {
         "@binance/common": "1.2.2",
-        "axios": "^1.7.4"
+        "axios": "^1.13.6"
     }
 }
