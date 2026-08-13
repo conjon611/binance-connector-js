@@ -297,9 +297,17 @@ export function setFlattenedQueryParams(
         return;
     }
 
-    // Object handling
+    // Object handling with prototype pollution protection
     if (typeof parameter === 'object') {
+        // Prevent prototype pollution by checking for dangerous keys
+        const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+        
         for (const subKey of Object.keys(parameter as Record<string, unknown>)) {
+            // Skip dangerous keys that could lead to prototype pollution
+            if (dangerousKeys.includes(subKey)) {
+                continue;
+            }
+            
             const subVal = (parameter as Record<string, unknown>)[subKey];
             const newKey = key ? `${key}.${subKey}` : subKey;
             setFlattenedQueryParams(urlSearchParams, subVal, newKey);
@@ -367,7 +375,13 @@ export function normalizeScientificNumbers<T>(obj: T): ScientificToString<T> {
         return obj.map((item) => normalizeScientificNumbers(item)) as ScientificToString<T>;
     } else if (typeof obj === 'object' && obj !== null) {
         const result = {} as Record<string, unknown>;
+        const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+        
         for (const key of Object.keys(obj)) {
+            // Skip dangerous keys to prevent prototype pollution
+            if (dangerousKeys.includes(key)) {
+                continue;
+            }
             result[key] = normalizeScientificNumbers((obj as Record<string, unknown>)[key]);
         }
         return result as ScientificToString<T>;
@@ -432,6 +446,39 @@ export const shouldRetryRequest = function (
 };
 
 /**
+ * Validates a URL to ensure it's safe and well-formed.
+ * 
+ * @param {string} url - The URL to validate.
+ * @param {string} [basePath] - Optional base path for validation.
+ * @returns {boolean} True if URL is valid and safe.
+ * @throws {Error} If URL is invalid or potentially malicious.
+ * @internal
+ */
+function validateURL(url: string, basePath?: string): boolean {
+    try {
+        const urlObj = new URL(url, basePath);
+        
+        // Only allow http and https protocols
+        if (!['http:', 'https:'].includes(urlObj.protocol)) {
+            throw new Error(`Invalid URL protocol: ${urlObj.protocol}`);
+        }
+        
+        // Prevent URL with embedded credentials
+        if (urlObj.username || urlObj.password) {
+            throw new Error('URLs with embedded credentials are not allowed');
+        }
+        
+        return true;
+    } catch (error) {
+        // Use generic error message to avoid leaking URL details
+        if (error instanceof Error && error.message.startsWith('Invalid URL')) {
+            throw error;
+        }
+        throw new Error('Invalid or malformed URL provided');
+    }
+}
+
+/**
  * Performs an HTTP request using the provided Axios instance and configuration.
  *
  * This function handles retries, rate limit handling, and error handling for the HTTP request.
@@ -444,9 +491,17 @@ export const httpRequestFunction = async function <T>(
     axiosArgs: AxiosRequestArgs,
     configuration?: ConfigurationRestAPI
 ): Promise<RestApiResponse<T>> {
+    const basePath = configuration?.basePath ?? '';
+    const fullURL = (globalAxios.defaults?.baseURL ? '' : basePath) + axiosArgs.url;
+    
+    // Validate URL before making request
+    if (basePath) {
+        validateURL(fullURL, basePath);
+    }
+    
     const axiosRequestArgs = {
         ...axiosArgs.options,
-        url: (globalAxios.defaults?.baseURL ? '' : (configuration?.basePath ?? '')) + axiosArgs.url,
+        url: fullURL,
     };
 
     if (configuration?.keepAlive && !configuration?.baseOptions?.httpsAgent)
@@ -761,6 +816,31 @@ export function buildUserAgent(packageName: string, packageVersion: string): str
 }
 
 /**
+ * Redacts sensitive data from an object for safe logging.
+ *
+ * @param {Record<string, unknown>} obj - The object to redact.
+ * @returns {Record<string, unknown>} A copy of the object with sensitive fields redacted.
+ * @internal
+ */
+function redactSensitiveData(obj: Record<string, unknown>): Record<string, unknown> {
+    const sensitiveKeys = ['apikey', 'signature', 'apisecret', 'password', 'privatekey', 'passphrase'];
+    const redacted: Record<string, unknown> = {};
+    
+    for (const [key, value] of Object.entries(obj)) {
+        const lowerKey = key.toLowerCase();
+        if (sensitiveKeys.some(sk => lowerKey.includes(sk))) {
+            redacted[key] = '***REDACTED***';
+        } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            redacted[key] = redactSensitiveData(value as Record<string, unknown>);
+        } else {
+            redacted[key] = value;
+        }
+    }
+    
+    return redacted;
+}
+
+/**
  * Builds a WebSocket API message with optional authentication and signature.
  *
  * @param {ConfigurationWebsocketAPI} configuration - The WebSocket API configuration.
@@ -807,6 +887,15 @@ const INVALID_HEADER_CONTROL_CHARS = new RegExp(
         String.fromCharCode(0x1f) +
         ']'
 );
+
+/**
+ * Exports the redaction function for use in other modules.
+ * This allows logging systems to redact sensitive information.
+ *
+ * @param {Record<string, unknown>} obj - The object to redact.
+ * @returns {Record<string, unknown>} A copy of the object with sensitive fields redacted.
+ */
+export { redactSensitiveData };
 
 /**
  * Sanitizes a header value by checking for and preventing control characters.
