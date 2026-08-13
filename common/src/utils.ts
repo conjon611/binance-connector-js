@@ -889,7 +889,6 @@ const INVALID_HEADER_CONTROL_CHARS = new RegExp(
 );
 
 /**
-<<<<<<< HEAD
  * Exports the redaction function for use in other modules.
  * This allows logging systems to redact sensitive information.
  *
@@ -899,28 +898,6 @@ const INVALID_HEADER_CONTROL_CHARS = new RegExp(
 export { redactSensitiveData };
 
 /**
- * Sanitizes a header value by checking for and preventing carriage return and line feed characters.
- *
- * @param {string | string[]} value - The header value or array of header values to sanitize.
- * @returns {string | string[]} The sanitized header value(s).
- * @throws {Error} If the header value contains CR/LF characters or other unsafe characters.
- */
-export function sanitizeHeaderValue(value: string | string[]): string | string[] {
-    const sanitizeOne = (v: string) => {
-        // Check for CR/LF which can be used for header injection
-        if (/\r|\n/.test(v)) throw new Error(`Invalid header value (contains CR/LF): "${v}"`);
-        
-        // Check for null bytes which can cause security issues
-        if (v.includes('\0')) throw new Error(`Invalid header value (contains null byte): "${v}"`);
-        
-        // Check for common header injection patterns
-        if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(v)) {
-            throw new Error(`Invalid header value (contains control characters): "${v}"`);
-        }
-        
-        // Trim to prevent leading/trailing whitespace issues
-        return v.trim();
-=======
  * Sanitizes a header value by checking for and preventing control characters.
  *
  * @param {string | string[]} value - The header value or array of header values to sanitize.
@@ -933,7 +910,6 @@ export function sanitizeHeaderValue(value: string | string[]): string | string[]
             throw new Error(`Invalid header value (contains control characters): "${v}"`);
         }
         return v;
->>>>>>> refs/remotes/origin/master
     };
 
     return Array.isArray(value) ? value.map(sanitizeOne) : sanitizeOne(value);
