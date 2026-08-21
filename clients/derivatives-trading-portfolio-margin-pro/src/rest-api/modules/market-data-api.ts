@@ -246,7 +246,7 @@ export class MarketDataApi implements MarketDataApiInterface {
      */
     public async getPortfolioMarginAssetLeverage(): Promise<
         RestApiResponse<GetPortfolioMarginAssetLeverageResponse>
-        > {
+    > {
         const localVarAxiosArgs =
             await this.localVarAxiosParamCreator.getPortfolioMarginAssetLeverage();
         return sendRequest<GetPortfolioMarginAssetLeverageResponse>(
@@ -272,7 +272,7 @@ export class MarketDataApi implements MarketDataApiInterface {
      */
     public async portfolioMarginCollateralRate(): Promise<
         RestApiResponse<PortfolioMarginCollateralRateResponse>
-        > {
+    > {
         const localVarAxiosArgs =
             await this.localVarAxiosParamCreator.portfolioMarginCollateralRate();
         return sendRequest<PortfolioMarginCollateralRateResponse>(

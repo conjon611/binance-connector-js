@@ -657,7 +657,7 @@ export class RestAPI {
      */
     queryLiabilityCoinLeverageBracketInCrossMarginProMode(): Promise<
         RestApiResponse<QueryLiabilityCoinLeverageBracketInCrossMarginProModeResponse>
-        > {
+    > {
         return this.marketDataApi.queryLiabilityCoinLeverageBracketInCrossMarginProMode();
     }
 

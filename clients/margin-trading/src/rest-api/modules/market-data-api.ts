@@ -625,7 +625,7 @@ export class MarketDataApi implements MarketDataApiInterface {
      */
     public async crossMarginCollateralRatio(): Promise<
         RestApiResponse<CrossMarginCollateralRatioResponse>
-        > {
+    > {
         const localVarAxiosArgs = await this.localVarAxiosParamCreator.crossMarginCollateralRatio();
         return sendRequest<CrossMarginCollateralRatioResponse>(
             this.configuration,
@@ -821,7 +821,7 @@ export class MarketDataApi implements MarketDataApiInterface {
      */
     public async queryLiabilityCoinLeverageBracketInCrossMarginProMode(): Promise<
         RestApiResponse<QueryLiabilityCoinLeverageBracketInCrossMarginProModeResponse>
-        > {
+    > {
         const localVarAxiosArgs =
             await this.localVarAxiosParamCreator.queryLiabilityCoinLeverageBracketInCrossMarginProMode();
         return sendRequest<QueryLiabilityCoinLeverageBracketInCrossMarginProModeResponse>(

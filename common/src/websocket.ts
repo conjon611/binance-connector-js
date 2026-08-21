@@ -511,7 +511,7 @@ export class WebsocketCommon extends WebsocketEventEmitter {
             this.logger.info('Received PING from server');
             this.emit('ping');
             ws.pong();
-            this.logger.info('Responded PONG to server\'s PING message');
+            this.logger.info("Responded PONG to server's PING message");
         });
 
         ws.on('pong', () => {

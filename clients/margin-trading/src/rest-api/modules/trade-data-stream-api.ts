@@ -563,7 +563,7 @@ export class TradeDataStreamApi implements TradeDataStreamApiInterface {
      */
     public async startMarginUserDataStream(): Promise<
         RestApiResponse<StartMarginUserDataStreamResponse>
-        > {
+    > {
         const localVarAxiosArgs = await this.localVarAxiosParamCreator.startMarginUserDataStream();
         return sendRequest<StartMarginUserDataStreamResponse>(
             this.configuration,

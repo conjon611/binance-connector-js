@@ -20,9 +20,10 @@ export default [
                     allowTernary: true,
                 },
             ],
-            quotes: ['error', 'single'],
+            // Formatting is owned by Prettier; ESLint rules that duplicate it
+            // (`quotes`, `indent`) contradicted the Prettier config and are
+            // deliberately not enabled here.
             semi: ['error', 'always'],
-            indent: ['error', 4],
         },
     },
     {

@@ -105,7 +105,7 @@ class RequestSigner {
             return;
         }
 
-        throw new Error('Either \'apiSecret\' or \'privateKey\' must be provided for signed requests.');
+        throw new Error("Either 'apiSecret' or 'privateKey' must be provided for signed requests.");
     }
 
     sign(queryParams: object): string {
@@ -195,7 +195,7 @@ export function validateTimeUnit(timeUnit: string): string | undefined {
         timeUnit !== TimeUnit.millisecond &&
         timeUnit !== TimeUnit.microsecond
     ) {
-        throw new Error('timeUnit must be either \'MILLISECOND\' or \'MICROSECOND\'');
+        throw new Error("timeUnit must be either 'MILLISECOND' or 'MICROSECOND'");
     }
 
     return timeUnit;
@@ -514,22 +514,22 @@ export const httpRequestFunction = async function <T>(
                     const errorMsg = (data as { msg?: string }).msg;
 
                     switch (status) {
-                    case 400:
-                        throw new BadRequestError(errorMsg);
-                    case 401:
-                        throw new UnauthorizedError(errorMsg);
-                    case 403:
-                        throw new ForbiddenError(errorMsg);
-                    case 404:
-                        throw new NotFoundError(errorMsg);
-                    case 418:
-                        throw new RateLimitBanError(errorMsg);
-                    case 429:
-                        throw new TooManyRequestsError(errorMsg);
-                    default:
-                        if (status >= 500 && status < 600)
-                            throw new ServerError(`Server error: ${status}`, status);
-                        throw new ConnectorClientError(errorMsg);
+                        case 400:
+                            throw new BadRequestError(errorMsg);
+                        case 401:
+                            throw new UnauthorizedError(errorMsg);
+                        case 403:
+                            throw new ForbiddenError(errorMsg);
+                        case 404:
+                            throw new NotFoundError(errorMsg);
+                        case 418:
+                            throw new RateLimitBanError(errorMsg);
+                        case 429:
+                            throw new TooManyRequestsError(errorMsg);
+                        default:
+                            if (status >= 500 && status < 600)
+                                throw new ServerError(`Server error: ${status}`, status);
+                            throw new ConnectorClientError(errorMsg);
                     }
                 } else {
                     if (retries > 0 && attempt >= retries)
@@ -567,20 +567,20 @@ export const parseRateLimitHeaders = function (
 
         let interval: 'SECOND' | 'MINUTE' | 'HOUR' | 'DAY';
         switch (intervalLetter) {
-        case 'S':
-            interval = 'SECOND';
-            break;
-        case 'M':
-            interval = 'MINUTE';
-            break;
-        case 'H':
-            interval = 'HOUR';
-            break;
-        case 'D':
-            interval = 'DAY';
-            break;
-        default:
-            return null;
+            case 'S':
+                interval = 'SECOND';
+                break;
+            case 'M':
+                interval = 'MINUTE';
+                break;
+            case 'H':
+                interval = 'HOUR';
+                break;
+            case 'D':
+                interval = 'DAY';
+                break;
+            default:
+                return null;
         }
 
         return { interval, intervalNum };
@@ -735,13 +735,13 @@ export function replaceWebsocketStreamsPlaceholders(
             const value = normalizedVariables[normalizedFieldName];
 
             switch (normalizedFieldName) {
-            case 'symbol':
-            case 'windowsize':
-                return (value as string).toLowerCase();
-            case 'updatespeed':
-                return `@${value}`;
-            default:
-                return (precedingAt || '') + (value as string);
+                case 'symbol':
+                case 'windowsize':
+                    return (value as string).toLowerCase();
+                case 'updatespeed':
+                    return `@${value}`;
+                default:
+                    return (precedingAt || '') + (value as string);
             }
         }
 

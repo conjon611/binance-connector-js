@@ -1144,7 +1144,7 @@ export class CapitalApi implements CapitalApiInterface {
      */
     public async fetchWithdrawAddressList(): Promise<
         RestApiResponse<FetchWithdrawAddressListResponse>
-        > {
+    > {
         const localVarAxiosArgs = await this.localVarAxiosParamCreator.fetchWithdrawAddressList();
         return sendRequest<FetchWithdrawAddressListResponse>(
             this.configuration,

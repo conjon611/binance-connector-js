@@ -10,82 +10,87 @@ jobs:
       modified_targets: ${{ steps.filter.outputs.modified_targets }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 2 
+          # Full history so the merge base with the target branch is available.
+          fetch-depth: 0
 
       - name: Detect modified targets
         id: filter
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
+          set -euo pipefail
+
+          git fetch --no-tags origin "$BASE_REF"
+          BASE="origin/$BASE_REF"
+
           MODIFIED_TARGETS=()
 
-          # Ensure HEAD^ exists
-          if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
-            BASE_COMMIT="HEAD^"
-          else
-            BASE_COMMIT=$(git rev-list --max-parents=0 HEAD) # First commit
-          fi
-
-          # Check common directory
-          if ! git diff --quiet "$BASE_COMMIT" HEAD -- "common"; then
+          # Compare against the merge base so every commit on the branch is
+          # considered, not just the tip commit.
+          COMMON_CHANGED=false
+          if ! git diff --quiet "$BASE"...HEAD -- "common"; then
             echo "Changes detected in common"
+            COMMON_CHANGED=true
             MODIFIED_TARGETS+=("common")
           fi
 
-          # Check each client dynamically
           for client in clients/*; do
             CLIENT_NAME=$(basename "$client")
-            if ! git diff --quiet "$BASE_COMMIT" HEAD -- "$client"; then
+            if [ "$COMMON_CHANGED" = true ]; then
+              # Every client depends on @binance/common, so a change there has
+              # to be validated against all of them.
+              echo "Including $CLIENT_NAME (common changed)"
+              MODIFIED_TARGETS+=("$CLIENT_NAME")
+            elif ! git diff --quiet "$BASE"...HEAD -- "$client"; then
               echo "Changes detected in $CLIENT_NAME"
               MODIFIED_TARGETS+=("$CLIENT_NAME")
             fi
           done
 
-          # Convert to JSON array format
-          MODIFIED_TARGETS_JSON=$(printf '%s\n' "${MODIFIED_TARGETS[@]}" | jq -R -s -c 'split("\n") | map(select(. != ""))')
+          MODIFIED_TARGETS_JSON=$(printf '%s\n' "${MODIFIED_TARGETS[@]+"${MODIFIED_TARGETS[@]}"}" \
+            | jq -R -s -c 'split("\n") | map(select(. != ""))')
 
           echo "Detected modified targets: $MODIFIED_TARGETS_JSON"
-          echo "modified_targets=$MODIFIED_TARGETS_JSON" >> $GITHUB_ENV
-          echo "::set-output name=modified_targets::$MODIFIED_TARGETS_JSON"
+          echo "modified_targets=$MODIFIED_TARGETS_JSON" >> "$GITHUB_OUTPUT"
 
   build-target:
     runs-on: ubuntu-latest
     needs: detect-targets
     if: ${{ needs.detect-targets.outputs.modified_targets != '[]' }}
     strategy:
+      fail-fast: false
       matrix:
         target: ${{ fromJson(needs.detect-targets.outputs.modified_targets) }}
-        node-version: [22.x]
+        node-version: [20.x, 22.x]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: ${{ matrix.target == 'common' && 'common/package-lock.json' || format('clients/{0}/package-lock.json', matrix.target) }}
 
       - name: Build ${{ matrix.target }}
+        working-directory: ${{ matrix.target == 'common' && 'common' || format('clients/{0}', matrix.target) }}
         run: |
-          if [ "${{ matrix.target }}" == "common" ]; then
-            cd common
-          else
-            cd clients/${{ matrix.target }}
-          fi
+          set -euo pipefail
 
-          # Install dependencies
-          npm install
+          # Install exactly what the lockfile pins.
+          npm ci
 
-          # Format
-          npm run format
+          # Verify formatting and lint without rewriting the working tree.
+          npm run format:check
+          npm run lint:check
 
-          # Lint
-          npm run lint
+          # tsup only type-checks src; this covers tests/ and examples/ too.
+          npm run typecheck
 
-          # Test
-          npm run test
+          # Enforces the coverage thresholds in jest.config.ts.
+          npm run test:coverage
 
-          # Build
           npm run build

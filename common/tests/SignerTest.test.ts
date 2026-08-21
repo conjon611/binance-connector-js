@@ -185,7 +185,7 @@ describe('getSignature()', () => {
     describe('rejected configurations', () => {
         it('should throw when neither an API secret nor a private key is supplied', () => {
             expect(() => getSignature({}, QUERY)).toThrow(
-                'Either \'apiSecret\' or \'privateKey\' must be provided for signed requests.'
+                "Either 'apiSecret' or 'privateKey' must be provided for signed requests."
             );
         });
 

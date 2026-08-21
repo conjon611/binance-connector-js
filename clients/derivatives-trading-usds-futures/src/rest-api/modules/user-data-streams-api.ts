@@ -183,7 +183,7 @@ export class UserDataStreamsApi implements UserDataStreamsApiInterface {
      */
     public async keepaliveUserDataStream(): Promise<
         RestApiResponse<KeepaliveUserDataStreamResponse>
-        > {
+    > {
         const localVarAxiosArgs = await this.localVarAxiosParamCreator.keepaliveUserDataStream();
         return sendRequest<KeepaliveUserDataStreamResponse>(
             this.configuration,

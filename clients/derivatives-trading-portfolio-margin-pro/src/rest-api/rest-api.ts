@@ -428,7 +428,7 @@ export class RestAPI {
      */
     getPortfolioMarginAssetLeverage(): Promise<
         RestApiResponse<GetPortfolioMarginAssetLeverageResponse>
-        > {
+    > {
         return this.marketDataApi.getPortfolioMarginAssetLeverage();
     }
 
@@ -444,7 +444,7 @@ export class RestAPI {
      */
     portfolioMarginCollateralRate(): Promise<
         RestApiResponse<PortfolioMarginCollateralRateResponse>
-        > {
+    > {
         return this.marketDataApi.portfolioMarginCollateralRate();
     }
 

@@ -16,10 +16,13 @@
         "build": "npm run clean && tsup",
         "typecheck": "tsc --noEmit",
         "clean": "rm -rf dist",
-        "test": "npx jest --maxWorkers=4 --bail",
+        "test": "npx jest --maxWorkers=4",
+        "test:coverage": "npx jest --coverage --maxWorkers=4",
         "test:watch": "npx jest --watch",
         "format": "npx prettier --ignore-path .prettierignore --write .",
-        "lint": "npx eslint '**/*.ts' --fix"
+        "format:check": "npx prettier --ignore-path .prettierignore --check .",
+        "lint": "npx eslint '**/*.ts' --fix",
+        "lint:check": "npx eslint '**/*.ts'"
     },
     "keywords": [
         "Binance",

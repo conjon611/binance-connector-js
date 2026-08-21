@@ -82,7 +82,7 @@ describe('Utility Functions', () => {
 
         it('should throw an error for invalid timeUnit values', () => {
             expect(() => validateTimeUnit('INVALID')).toThrowError(
-                'timeUnit must be either \'MILLISECOND\' or \'MICROSECOND\''
+                "timeUnit must be either 'MILLISECOND' or 'MICROSECOND'"
             );
         });
     });
@@ -176,7 +176,7 @@ describe('Utility Functions', () => {
         it('should throw an error if neither apiSecret nor privateKey is provided', () => {
             const config = {};
             expect(() => getSignature(config, mockParams)).toThrowError(
-                'Either \'apiSecret\' or \'privateKey\' must be provided for signed requests.'
+                "Either 'apiSecret' or 'privateKey' must be provided for signed requests."
             );
         });
 
@@ -817,7 +817,7 @@ describe('Utility Functions', () => {
                 if (error instanceof Error) {
                     expect(error).toBeInstanceOf(Error);
                     expect(error.message).toBe(
-                        'timeUnit must be either \'MILLISECOND\' or \'MICROSECOND\''
+                        "timeUnit must be either 'MILLISECOND' or 'MICROSECOND'"
                     );
                 } else {
                     fail('Expected error to be an instance of Error');
