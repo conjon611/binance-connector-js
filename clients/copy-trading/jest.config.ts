@@ -10,10 +10,10 @@ const config: Config = {
     // floored to whole percents. Raise them as coverage improves; never lower them.
     coverageThreshold: {
         global: {
-            statements: 26,
-            branches: 0,
-            functions: 8,
-            lines: 27,
+            statements: 46,
+            branches: 23,
+            functions: 16,
+            lines: 48,
         },
     },
 };
